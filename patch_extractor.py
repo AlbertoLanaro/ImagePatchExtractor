@@ -11,18 +11,58 @@ from sklearn.feature_extraction.image import extract_patches_2d
 # random seed is used to extract the same patch from input images and masks
 RND_SEED = 44
 
-def create_patches(img_path, n, size, rnd_seed):
+def is_defective(mask_patch, th=0.01):
+    """
+    Check if @mask_patch is defective i.e. the percentage of white pixel is > @th
+        - if the mask associated to the extracted patch is defective -> the patch is saved with a '*KO.png' extension
+        - if the mask associated to the extracted patch is NOT defective -> the patch is saved with a '*OK.png' extension
+    """
+    return np.sum(mask_patch) > 255 * mask_patch.shape[0] * mask_patch.shape[1] * th
+
+def create_patches(img_path, n, size, mask_path=None):
+    """
+    Load imgs and masks and extract @n random patches possibly with overlap. 
+    If @mask_path is not set, only patch from input images are extracted
+    """
     # load imgs
     input_img_list = glob.glob(os.path.join(img_path, '*'))
     print('Detected %d images from folder --> %s' % (len(input_img_list), os.path.abspath(img_path)))
     imgs = np.array([misc.imread(f) for f in input_img_list])
     # extract patches
-    imgs_patches = np.array([extract_patches_2d(img, (size, size), n, random_state=rnd_seed) for img in imgs], dtype=np.uint8)
+    imgs_patches = np.array([extract_patches_2d(img, (size, size), n, RND_SEED) for img in imgs], dtype=np.uint8)
     # create folder to store patches
-    patch_path = Path(img_path).parents[0].joinpath(os.path.basename(img_path) + '_patch')
-    patch_path.mkdir(exist_ok=True)
+    imgs_patches_path = Path(img_path).parents[0].joinpath(os.path.basename(img_path) + '_patch')
+    imgs_patches_path.mkdir(exist_ok=True)
     # save to folder
-    [misc.imsave(os.path.join(patch_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '.png'), imgs_patches[id,n,:,:]) for id,im_path in zip(range(imgs_patches.shape[0]), input_img_list) for n in range(imgs_patches.shape[1])]
+    if not(mask_path):
+        print('No mask path has been specified...')
+        [misc.imsave(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '.png'), 
+                                imgs_patches[id,n,:,:]) for id,im_path in zip(range(imgs_patches.shape[0]), input_img_list) for n in range(imgs_patches.shape[1])]
+    else: 
+        # load masks
+        input_mask_list = glob.glob(os.path.join(mask_path, '*'))
+        print('Detected %d masks from folder --> %s' % (len(input_mask_list), os.path.abspath(mask_path)))
+        masks = np.array([misc.imread(f) for f in input_mask_list])
+        # extract patches
+        masks_patches = np.array([extract_patches_2d(mask, (size, size), n, RND_SEED) for mask in masks], dtype=np.uint8)
+        # create folder to store patches
+        masks_patch_path = Path(mask_path).parents[0].joinpath(os.path.basename(mask_path) + '_patch')
+        masks_patch_path.mkdir(exist_ok=True)
+        for (id, m_path, im_path) in zip(range(masks_patches.shape[0]), input_mask_list, input_img_list):
+            for n in range(masks_patches.shape[1]):
+                curr_img_patch = imgs_patches[id, n, :, :]
+                curr_mask_patch = masks_patches[id, n, :, :]
+                if is_defective(curr_mask_patch):
+                    misc.imsave(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '_KO.png'), 
+                                curr_img_patch)
+                    misc.imsave(os.path.join(masks_patch_path, os.path.basename(m_path).split('.')[-2] + '_PATCH_' + str(n) + '_KO.png'), 
+                                curr_mask_patch)
+                else:
+                    misc.imsave(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '_OK.png'), 
+                                curr_img_patch)
+                    misc.imsave(os.path.join(masks_patch_path, os.path.basename(m_path).split('.')[-2] + '_PATCH_' + str(n) + '_OK.png'), 
+                                curr_mask_patch)
+
 
 def main():
 
@@ -34,10 +74,7 @@ def main():
     parser.add_argument('-s', '--patch_size', help='Patches size will be: ($patch_size, $patch_size)', type=int, required=True)
     args = parser.parse_args()
 
-    create_patches(args.input_imgs_path, args.n_patches, args.patch_size, RND_SEED)   
-    # if any input masks path is passed
-    if args.input_masks_path:
-        create_patches(args.input_masks_path, args.n_patches, args.patch_size, RND_SEED)
+    create_patches(args.input_imgs_path, args.n_patches, args.patch_size, args.input_masks_path)   
 
 if __name__ == "__main__":
     main()
