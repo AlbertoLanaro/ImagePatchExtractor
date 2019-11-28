@@ -4,8 +4,8 @@ Simple python script that extract a given number of overlapping patches from a s
 The script can be run with several input parameters:
 - `--input_imgs_path`: path to images folder [`str` - required]
 - `--input_masks_path`: path to masks folder [`str` - optional]
-- `--n_patches`: number of extracted patches per image. If `None`, the maximum number of patches is take [`int` - optional].
-- `--patch_size`: the dimension of one patch, i.e. `(patch_size, patch_size)` ['int' - required]
+- `--n_patches`: number of extracted patches per image. If `None`, the maximum number of patches is extracted [`int` - optional].
+- `--patch_size`: patch dimensions, i.e. `(patch_size, patch_size)` ['int' - required]
 
 ## Dependencies
 All the dependencies are detailed in the `requirements.txt` file and can be installed with `pip` and the following command:
