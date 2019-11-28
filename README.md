@@ -5,7 +5,7 @@ The script can be run with several input parameters:
 - `--input_imgs_path`: path to images folder [`str` - required]
 - `--input_masks_path`: path to masks folder [`str` - optional]
 - `--n_patches`: number of extracted patches per image. If `None`, the maximum number of patches is extracted [`int` - optional].
-- `--patch_size`: patch dimensions, i.e. `(patch_size, patch_size)` ['int' - required]
+- `--patch_size`: patch dimensions, i.e. `(patch_size, patch_size)` [`int` - required]
 
 ## Dependencies
 All the dependencies are detailed in the `requirements.txt` file and can be installed with `pip` and the following command:
