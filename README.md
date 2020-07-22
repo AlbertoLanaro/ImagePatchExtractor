@@ -7,11 +7,16 @@ The script can be run with several input parameters:
 - `--n_patches`: number of extracted patches per image. If `None`, the maximum number of patches is extracted [`int` - optional].
 - `--patch_size`: patch dimensions, i.e. `(patch_size, patch_size)` [`int` - required]
 
+
 ## Dependencies
 All the dependencies are detailed in the `requirements.txt` file and can be installed with `pip` and the following command:
 ```pip3 install -r requirements.txt```
 
 ## Example
+
+The script can be launched as follows:
+
+`python3 patch_extractor.py -i samples/ -s 50`
 
 Here are two examples of patches extracted from a set if images and their correnspondent masks:
 
