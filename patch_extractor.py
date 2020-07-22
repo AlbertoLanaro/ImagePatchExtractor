@@ -4,9 +4,8 @@ import os
 from pathlib import Path
 
 import jax.numpy as np
-import matplotlib.pyplot as plt
-from scipy import misc
 from sklearn.feature_extraction.image import extract_patches_2d
+import imageio
 
 # random seed is used to extract the same patch from input images and masks
 RND_SEED = 44
@@ -27,7 +26,8 @@ def create_patches(img_path, n, size, mask_path=None):
     # load imgs
     input_img_list = glob.glob(os.path.join(img_path, '*'))
     print('Detected %d images from folder --> %s' % (len(input_img_list), os.path.abspath(img_path)))
-    imgs = np.array([misc.imread(f) for f in input_img_list])
+    print(input_img_list)
+    imgs = np.asarray([imageio.imread(f) for f in input_img_list])
     # extract patches
     imgs_patches = np.array([extract_patches_2d(img, (size, size), n, RND_SEED) for img in imgs], dtype=np.uint8)
     # create folder to store patches
@@ -36,13 +36,13 @@ def create_patches(img_path, n, size, mask_path=None):
     # save to folder
     if not(mask_path):
         print('No mask path has been specified...')
-        [misc.imsave(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '.png'), 
+        [imageio.imwrite(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '.png'), 
                                 imgs_patches[id,n,:,:]) for id,im_path in zip(range(imgs_patches.shape[0]), input_img_list) for n in range(imgs_patches.shape[1])]
     else: 
         # load masks
         input_mask_list = glob.glob(os.path.join(mask_path, '*'))
         print('Detected %d masks from folder --> %s' % (len(input_mask_list), os.path.abspath(mask_path)))
-        masks = np.array([misc.imread(f) for f in input_mask_list])
+        masks = np.asarray([imageio.imread(f) for f in input_mask_list])
         # extract patches
         masks_patches = np.array([extract_patches_2d(mask, (size, size), n, RND_SEED) for mask in masks], dtype=np.uint8)
         # create folder to store patches
@@ -53,14 +53,14 @@ def create_patches(img_path, n, size, mask_path=None):
                 curr_img_patch = imgs_patches[id, n, :, :]
                 curr_mask_patch = masks_patches[id, n, :, :]
                 if is_defective(curr_mask_patch):
-                    misc.imsave(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '_KO.png'), 
+                    imageio.imwrite(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '_KO.png'), 
                                 curr_img_patch)
-                    misc.imsave(os.path.join(masks_patch_path, os.path.basename(m_path).split('.')[-2] + '_PATCH_' + str(n) + '_KO.png'), 
+                    imageio.imwrite(os.path.join(masks_patch_path, os.path.basename(m_path).split('.')[-2] + '_PATCH_' + str(n) + '_KO.png'), 
                                 curr_mask_patch)
                 else:
-                    misc.imsave(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '_OK.png'), 
+                    imageio.imwrite(os.path.join(imgs_patches_path, os.path.basename(im_path).split('.')[-2] + '_PATCH_' + str(n) + '_OK.png'), 
                                 curr_img_patch)
-                    misc.imsave(os.path.join(masks_patch_path, os.path.basename(m_path).split('.')[-2] + '_PATCH_' + str(n) + '_OK.png'), 
+                    imageio.imwrite(os.path.join(masks_patch_path, os.path.basename(m_path).split('.')[-2] + '_PATCH_' + str(n) + '_OK.png'), 
                                 curr_mask_patch)
 
 
