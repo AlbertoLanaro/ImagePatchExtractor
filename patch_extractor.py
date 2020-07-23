@@ -31,11 +31,14 @@ def create_patches(img_path, n, size, mask_path=None):
     print('Detected %d images from folder --> %s' %
           (len(input_img_list), os.path.abspath(img_path)))
     print(input_img_list)
-    imgs = np.asarray([imageio.imread(f) for f in input_img_list])
+    imgs = [imageio.imread(f) for f in input_img_list]
     # extract patches
-    imgs_patches = np.array(
-        [extract_patches_2d(img, (size, size), n, RND_SEED) for img in imgs],
-        dtype=np.uint8)
+    imgs_patches = np.array([
+        extract_patches_2d(
+            img, (size, size), max_patches=n, random_state=RND_SEED)
+        for img in imgs
+    ],
+                            dtype=np.uint8)
     # create folder to store patches
     imgs_patches_path = Path(img_path).parents[0].joinpath(
         os.path.basename(img_path) + '_patch')
@@ -58,10 +61,11 @@ def create_patches(img_path, n, size, mask_path=None):
         input_mask_list = glob.glob(os.path.join(mask_path, '*'))
         print('Detected %d masks from folder --> %s' %
               (len(input_mask_list), os.path.abspath(mask_path)))
-        masks = np.asarray([imageio.imread(f) for f in input_mask_list])
+        masks = [imageio.imread(f) for f in input_mask_list]
         # extract patches
         masks_patches = np.array([
-            extract_patches_2d(mask, (size, size), n, RND_SEED)
+            extract_patches_2d(
+                mask, (size, size), max_patches=n, random_state=RND_SEED)
             for mask in masks
         ],
                                  dtype=np.uint8)
